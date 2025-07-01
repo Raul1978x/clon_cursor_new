@@ -131,17 +131,62 @@ const NexusChat = () => {
     );
   };
 
-  // Mock response generator
+  // Enhanced mock response generator with more realistic AI responses
   const generateMockResponse = (query: string): string => {
-    if (query.toLowerCase().includes("authentication")) {
-      return "The authentication is managed in the `src/auth` directory. The main authentication logic is in `src/auth/authService.ts`. Here's the key function that handles user login:\n\n```typescript\nasync function authenticateUser(email: string, password: string): Promise<AuthResult> {\n  try {\n    const response = await api.post('/auth/login', { email, password });\n    const { token, user } = response.data;\n    \n    // Store token in local storage\n    localStorage.setItem('auth_token', token);\n    \n    return {\n      success: true,\n      user,\n      token\n    };\n  } catch (error) {\n    return {\n      success: false,\n      error: error.message || 'Authentication failed'\n    };\n  }\n}\n```\n\nThis function is called from the login form component at `src/components/LoginForm.tsx`.";
-    } else if (
-      query.toLowerCase().includes("api") ||
-      query.toLowerCase().includes("endpoint")
+    const lowerQuery = query.toLowerCase();
+
+    if (
+      lowerQuery.includes("file") ||
+      lowerQuery.includes("open") ||
+      lowerQuery.includes("create")
     ) {
-      return "The API endpoints are defined in `src/api/endpoints.ts`. The API client setup is in `src/api/client.ts` which uses Axios for HTTP requests.";
+      return "I can help you with file operations! Your project has the following structure:\n\n```\nsrc/\n├── components/\n│   ├── home.tsx\n│   └── nexus/\n│       ├── InlineCommandPalette.tsx\n│       ├── NexusChat.tsx\n│       └── ErrorCorrectionTooltip.tsx\n└── utils/\n    └── helpers.ts\n```\n\nYou can:\n- Click on files in the explorer to open them\n- Use Ctrl+S to save changes\n- Use Ctrl+W to close files\n\nWould you like me to help you create a new file or explain any existing code?";
+    } else if (lowerQuery.includes("save") || lowerQuery.includes("ctrl+s")) {
+      return "To save files in Nexus Editor:\n\n1. **Keyboard shortcut**: Press `Ctrl+S` (or `Cmd+S` on Mac)\n2. **File indicator**: Unsaved files show a dot (•) next to their name\n3. **Auto-save**: Files are automatically marked as modified when you type\n\n```typescript\n// Example of file save handling\nconst saveFile = () => {\n  const newContents = new Map(fileContents);\n  newContents.set(currentFile, code);\n  setFileContents(newContents);\n  console.log(`File ${currentFile} saved!`);\n};\n```\n\nYour changes are preserved in the editor's memory. Would you like to know about other file operations?";
+    } else if (
+      lowerQuery.includes("authentication") ||
+      lowerQuery.includes("auth")
+    ) {
+      return "I can see your project uses authentication. Here's the main authentication logic:\n\n```typescript\nasync function authenticateUser(email: string, password: string): Promise<AuthResult> {\n  try {\n    const response = await api.post('/auth/login', { email, password });\n    const { token, user } = response.data;\n    \n    // Store token securely\n    localStorage.setItem('auth_token', token);\n    \n    return { success: true, user, token };\n  } catch (error) {\n    return { success: false, error: error.message };\n  }\n}\n```\n\nThis is typically called from your login components. Would you like me to help you implement JWT token refresh or add OAuth integration?";
+    } else if (
+      lowerQuery.includes("component") ||
+      lowerQuery.includes("react")
+    ) {
+      return "I can help you with React components! Your project structure looks great. Here are some suggestions:\n\n```typescript\n// Example of a reusable component pattern\ninterface ButtonProps {\n  variant: 'primary' | 'secondary';\n  onClick: () => void;\n  children: React.ReactNode;\n}\n\nconst Button = ({ variant, onClick, children }: ButtonProps) => {\n  return (\n    <button \n      className={`btn btn-${variant}`}\n      onClick={onClick}\n    >\n      {children}\n    </button>\n  );\n};\n```\n\nWhat specific component would you like help with?";
+    } else if (
+      lowerQuery.includes("error") ||
+      lowerQuery.includes("bug") ||
+      lowerQuery.includes("fix")
+    ) {
+      return "I can help you debug issues! Common patterns I see:\n\n1. **State Management**: Make sure you're using useState correctly\n2. **Effect Dependencies**: Check your useEffect dependency arrays\n3. **Type Safety**: Ensure your TypeScript interfaces match your data\n\n```typescript\n// Common debugging pattern\nconst [data, setData] = useState<DataType | null>(null);\nconst [loading, setLoading] = useState(true);\nconst [error, setError] = useState<string | null>(null);\n\nuseEffect(() => {\n  fetchData()\n    .then(setData)\n    .catch(err => setError(err.message))\n    .finally(() => setLoading(false));\n}, []);\n```\n\nWhat specific error are you encountering?";
+    } else if (
+      lowerQuery.includes("api") ||
+      lowerQuery.includes("endpoint") ||
+      lowerQuery.includes("fetch")
+    ) {
+      return "For API integration, I recommend this pattern:\n\n```typescript\n// API service layer\nclass ApiService {\n  private baseURL = process.env.REACT_APP_API_URL;\n  \n  async get<T>(endpoint: string): Promise<T> {\n    const response = await fetch(`${this.baseURL}${endpoint}`, {\n      headers: {\n        'Authorization': `Bearer ${localStorage.getItem('token')}`,\n        'Content-Type': 'application/json'\n      }\n    });\n    \n    if (!response.ok) throw new Error('API request failed');\n    return response.json();\n  }\n}\n\nexport const api = new ApiService();\n```\n\nThis provides type safety and centralized error handling. Need help with a specific endpoint?";
+    } else if (
+      lowerQuery.includes("style") ||
+      lowerQuery.includes("css") ||
+      lowerQuery.includes("design")
+    ) {
+      return "For styling, you're using Tailwind CSS which is great! Here are some best practices:\n\n```typescript\n// Use CSS variables for consistent theming\nconst Button = ({ variant }: { variant: 'primary' | 'secondary' }) => (\n  <button className={cn(\n    'px-4 py-2 rounded-md font-medium transition-colors',\n    variant === 'primary' && 'bg-blue-600 text-white hover:bg-blue-700',\n    variant === 'secondary' && 'bg-gray-200 text-gray-900 hover:bg-gray-300'\n  )}>\n    Click me\n  </button>\n);\n```\n\nYour shadcn/ui components provide excellent design consistency. What styling challenge can I help with?";
+    } else if (
+      lowerQuery.includes("performance") ||
+      lowerQuery.includes("optimize")
+    ) {
+      return "Here are some performance optimization tips for your React app:\n\n```typescript\n// 1. Memoize expensive calculations\nconst expensiveValue = useMemo(() => {\n  return heavyComputation(data);\n}, [data]);\n\n// 2. Optimize re-renders\nconst MemoizedComponent = React.memo(({ data }) => {\n  return <div>{data.name}</div>;\n});\n\n// 3. Lazy load components\nconst LazyComponent = lazy(() => import('./HeavyComponent'));\n```\n\nI can also help with bundle analysis, code splitting, or specific performance bottlenecks. What area needs optimization?";
+    } else if (lowerQuery.includes("test") || lowerQuery.includes("testing")) {
+      return "Testing is crucial! Here's a testing pattern for your components:\n\n```typescript\nimport { render, screen, fireEvent } from '@testing-library/react';\nimport { Button } from './Button';\n\ntest('button calls onClick when clicked', () => {\n  const handleClick = jest.fn();\n  render(<Button onClick={handleClick}>Click me</Button>);\n  \n  fireEvent.click(screen.getByText('Click me'));\n  expect(handleClick).toHaveBeenCalledTimes(1);\n});\n```\n\nWould you like help setting up Jest, React Testing Library, or writing specific tests?";
     } else {
-      return "I'm not sure about that specific detail in your project. Could you provide more context or ask about a different aspect of your codebase?";
+      const responses = [
+        "I can help you with that! Could you provide more specific details about what you're trying to accomplish?",
+        "Based on your codebase, I can assist with React components, TypeScript, API integration, or styling. What would you like to focus on?",
+        "I'm analyzing your project structure. It looks like you're building a code editor. What specific functionality are you working on?",
+        "I can help with debugging, optimization, or adding new features. What's your current challenge?",
+        "Your project uses modern React patterns. I can help with state management, component architecture, or performance optimization. What interests you?",
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
     }
   };
 

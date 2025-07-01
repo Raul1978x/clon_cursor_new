@@ -55,21 +55,330 @@ const InlineCommandPalette = ({
   const [showDiff, setShowDiff] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
 
-  // Mock function to simulate API call
+  // Enhanced mock function with intelligent code generation
   const processPrompt = async () => {
     if (!prompt.trim()) return;
 
     setIsLoading(true);
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // Simulate API delay with realistic timing
+    await new Promise((resolve) =>
+      setTimeout(resolve, 1200 + Math.random() * 800),
+    );
 
-    // Mock response - in a real implementation this would come from the API
-    const mockGeneratedCode = `function example() {\n  // Log a greeting message to the console\n  console.log("Hello world!");\n  \n  // Return a value\n  return true;\n}`;
+    // Intelligent mock response based on prompt and selected code
+    const mockGeneratedCode = generateIntelligentResponse(prompt, selectedCode);
 
     setGeneratedCode(mockGeneratedCode);
     setIsLoading(false);
     setShowDiff(true);
+  };
+
+  // Intelligent response generator based on prompt analysis
+  const generateIntelligentResponse = (
+    userPrompt: string,
+    code: string,
+  ): string => {
+    const lowerPrompt = userPrompt.toLowerCase();
+
+    if (lowerPrompt.includes("component") || lowerPrompt.includes("react")) {
+      return createReactComponent(code, userPrompt);
+    } else if (
+      lowerPrompt.includes("hook") ||
+      lowerPrompt.includes("usestate")
+    ) {
+      return addReactHooks(code);
+    } else if (lowerPrompt.includes("api") || lowerPrompt.includes("fetch")) {
+      return createApiCall(code, userPrompt);
+    } else if (
+      lowerPrompt.includes("comment") ||
+      lowerPrompt.includes("document")
+    ) {
+      return addCommentsToCode(code);
+    } else if (
+      lowerPrompt.includes("async") ||
+      lowerPrompt.includes("await") ||
+      lowerPrompt.includes("promise")
+    ) {
+      return convertToAsync(code);
+    } else if (
+      lowerPrompt.includes("typescript") ||
+      lowerPrompt.includes("type")
+    ) {
+      return addTypeScript(code);
+    } else if (
+      lowerPrompt.includes("error") ||
+      lowerPrompt.includes("try") ||
+      lowerPrompt.includes("catch")
+    ) {
+      return addErrorHandling(code);
+    } else if (
+      lowerPrompt.includes("optimize") ||
+      lowerPrompt.includes("performance")
+    ) {
+      return optimizeCode(code);
+    } else if (
+      lowerPrompt.includes("test") ||
+      lowerPrompt.includes("unit test")
+    ) {
+      return generateTests(code);
+    } else if (
+      lowerPrompt.includes("refactor") ||
+      lowerPrompt.includes("clean")
+    ) {
+      return refactorCode(code);
+    } else {
+      return enhanceCode(code, userPrompt);
+    }
+  };
+
+  const createReactComponent = (code: string, prompt: string): string => {
+    const componentName = extractComponentName(prompt) || "NewComponent";
+    return `import React, { useState } from 'react';
+
+interface ${componentName}Props {
+  title?: string;
+  onAction?: () => void;
+}
+
+const ${componentName} = ({ title = "Default Title", onAction }: ${componentName}Props) => {
+  const [isActive, setIsActive] = useState(false);
+
+  const handleClick = () => {
+    setIsActive(!isActive);
+    onAction?.();
+  };
+
+  return (
+    <div className={\`component-container \${isActive ? 'active' : ''}\`}>
+      <h2>{title}</h2>
+      <button onClick={handleClick}>
+        {isActive ? 'Deactivate' : 'Activate'}
+      </button>
+      {/* Original code integration */}
+      <div className="original-content">
+        {/* ${code.split("\n")[0]} */}
+      </div>
+    </div>
+  );
+};
+
+export default ${componentName};`;
+  };
+
+  const addReactHooks = (code: string): string => {
+    return `import React, { useState, useEffect, useCallback } from 'react';
+
+// Enhanced with React hooks
+const EnhancedComponent = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      ${code.includes("fetch") ? code : '// Original logic here\n      const result = await fetch("/api/data");\n      const data = await result.json();'}
+      setData(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  
+  return (
+    <div>
+      {/* Render your data here */}
+      {JSON.stringify(data, null, 2)}
+    </div>
+  );
+};
+
+export default EnhancedComponent;`;
+  };
+
+  const createApiCall = (code: string, prompt: string): string => {
+    const endpoint = extractEndpoint(prompt) || "/api/data";
+    return `// Enhanced API integration
+const apiService = {
+  async ${extractMethodName(prompt) || "fetchData"}() {
+    try {
+      const response = await fetch('${endpoint}', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': \`Bearer \${localStorage.getItem('token')}\`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(\`HTTP error! status: \${response.status}\`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('API call failed:', error);
+      throw error;
+    }
+  }
+};
+
+// Usage in component
+${code}
+
+// Integration example:
+// const data = await apiService.fetchData();`;
+  };
+
+  const extractComponentName = (prompt: string): string | null => {
+    const match = prompt.match(
+      /component\s+(?:called\s+|named\s+)?([A-Za-z][A-Za-z0-9]*)/i,
+    );
+    return match ? match[1] : null;
+  };
+
+  const extractEndpoint = (prompt: string): string | null => {
+    const match = prompt.match(/\/[a-zA-Z0-9\/\-_]+/);
+    return match ? match[0] : null;
+  };
+
+  const extractMethodName = (prompt: string): string | null => {
+    const match = prompt.match(
+      /(get|post|put|delete|fetch)\s*([A-Za-z][A-Za-z0-9]*)?/i,
+    );
+    return match ? (match[2] ? `${match[1]}${match[2]}` : match[1]) : null;
+  };
+
+  const addCommentsToCode = (code: string): string => {
+    if (code.includes("function example")) {
+      return `/**
+ * Example function that demonstrates basic functionality
+ * @returns {boolean} Always returns true
+ */
+function example() {
+  // Log a greeting message to the console
+  console.log("Hello world!");
+  
+  // Return success status
+  return true;
+}`;
+    }
+    return `// Enhanced with documentation\n${code
+      .split("\n")
+      .map((line) =>
+        line.trim() ? `${line} // TODO: Add specific comment` : line,
+      )
+      .join("\n")}`;
+  };
+
+  const convertToAsync = (code: string): string => {
+    if (code.includes("function example")) {
+      return `async function example() {
+  // Simulate async operation
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  // Log a greeting message to the console
+  console.log("Hello world!");
+  
+  // Return a promise that resolves to true
+  return Promise.resolve(true);
+}`;
+    }
+    return `async ${code.replace("function", "function").replace("{", "{\n  await new Promise(resolve => setTimeout(resolve, 100));")}`;
+  };
+
+  const addTypeScript = (code: string): string => {
+    if (code.includes("function example")) {
+      return `function example(): Promise<boolean> {
+  // Log a greeting message to the console
+  console.log("Hello world!");
+  
+  // Return a typed value
+  return Promise.resolve(true);
+}`;
+    }
+    return code.replace("function", "function").replace("()", "(): void");
+  };
+
+  const addErrorHandling = (code: string): string => {
+    return `try {
+${code
+  .split("\n")
+  .map((line) => "  " + line)
+  .join("\n")}
+} catch (error) {
+  console.error('An error occurred:', error);
+  throw error;
+}`;
+  };
+
+  const optimizeCode = (code: string): string => {
+    if (code.includes("console.log")) {
+      return code.replace(
+        'console.log("Hello world!");',
+        `// Optimized logging with performance consideration
+if (process.env.NODE_ENV === 'development') {
+  console.log("Hello world!");
+}`,
+      );
+    }
+    return `// Optimized version\n${code}\n// TODO: Consider memoization for expensive operations`;
+  };
+
+  const generateTests = (code: string): string => {
+    return `// Unit tests for the function
+import { example } from './example';
+
+describe('example function', () => {
+  test('should return true', () => {
+    const result = example();
+    expect(result).toBe(true);
+  });
+  
+  test('should log hello world', () => {
+    const consoleSpy = jest.spyOn(console, 'log');
+    example();
+    expect(consoleSpy).toHaveBeenCalledWith('Hello world!');
+  });
+});`;
+  };
+
+  const refactorCode = (code: string): string => {
+    if (code.includes("function example")) {
+      return `// Refactored with better structure
+const GREETING_MESSAGE = "Hello world!";
+
+function example(): boolean {
+  logGreeting();
+  return getSuccessStatus();
+}
+
+function logGreeting(): void {
+  console.log(GREETING_MESSAGE);
+}
+
+function getSuccessStatus(): boolean {
+  return true;
+}`;
+    }
+    return `// Refactored code\n${code}\n// TODO: Extract constants and helper functions`;
+  };
+
+  const enhanceCode = (code: string, prompt: string): string => {
+    return `// Enhanced based on: "${prompt}"
+${code}
+
+// Additional functionality added
+// TODO: Implement specific enhancements based on requirements`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
